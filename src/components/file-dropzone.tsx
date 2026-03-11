@@ -5,11 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 interface FileDropzoneProps {
   disabled?: boolean;
   onFiles: (files: File[]) => void;
+  children?: React.ReactNode;
 }
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
-export function FileDropzone({ disabled = false, onFiles }: FileDropzoneProps) {
+export function FileDropzone({ disabled = false, onFiles, children }: FileDropzoneProps) {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     multiple: true,
     disabled,
@@ -47,6 +48,11 @@ export function FileDropzone({ disabled = false, onFiles }: FileDropzoneProps) {
           <p className="text-base font-semibold text-slate-800">将 PDF 文件拖放到这里，或点击选择文件</p>
           <p className="mt-2 text-sm text-slate-500">支持批量处理，自动保持每页顺序并生成 JPG。</p>
         </section>
+        {children && (
+          <div className="mt-4">
+            {children}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

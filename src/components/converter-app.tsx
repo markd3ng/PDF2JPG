@@ -235,18 +235,32 @@ export function ConverterApp() {
           </div>
         ) : null}
 
-        <section className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+        {/* Google AdSense 广告框 */}
+        <div className="rounded-xl bg-white p-4 shadow-sm">
+          <div className="text-center text-sm text-slate-500 mb-2">广告</div>
+          <div className="flex justify-center">
+            {/* 这里是 Google AdSense 广告代码占位符 */}
+            <div className="w-full max-w-md h-32 bg-slate-100 rounded-lg flex items-center justify-center">
+              <span className="text-sm text-slate-400">Google AdSense 广告位</span>
+            </div>
+          </div>
+        </div>
+
+        <section className="grid gap-5">
           <div className="flex flex-col gap-5">
-            <FileDropzone disabled={isWorking} onFiles={onFilesSelected} />
+            <FileDropzone disabled={isWorking} onFiles={onFilesSelected}>
+              <div className="flex justify-center">
+                <button
+                  type="button"
+                  onClick={processTasks}
+                  disabled={isWorking || tasks.length === 0}
+                  className="inline-flex w-fit items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-sky-500 px-5 py-2.5 text-sm font-semibold text-white shadow transition hover:from-blue-500 hover:to-sky-400 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+                >
+                  {isWorking ? "处理中..." : "开始转换"}
+                </button>
+              </div>
+            </FileDropzone>
             <DpiSelector value={dpi} onChange={setDpi} />
-            <button
-              type="button"
-              onClick={processTasks}
-              disabled={isWorking || tasks.length === 0}
-              className="inline-flex w-fit items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-sky-500 px-5 py-2.5 text-sm font-semibold text-white shadow transition hover:from-blue-500 hover:to-sky-400 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
-            >
-              {isWorking ? "处理中..." : "开始转换"}
-            </button>
           </div>
           <ProcessingList tasks={tasks} />
         </section>
