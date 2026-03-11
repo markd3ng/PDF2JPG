@@ -154,3 +154,51 @@ public/
 ## 版本说明
 
 当前可作为 `v1` 初版发布，适合先上线验证核心功能。
+
+## Changelog
+
+### v1.0.1
+- 添加 Google AdSense 广告框支持
+- 添加 Microsoft Clarity 统计代码
+- 优化页面布局为单列布局
+- 调整开始转换按钮位置
+- 优化 SEO 元数据
+
+## Google AdSense 使用说明
+
+1. 打开 `src/components/converter-app.tsx` 文件
+2. 找到 Google AdSense 广告框占位符（大约在第 243-245 行）
+3. 将占位符内容替换为您的 Google AdSense 代码
+4. 保存文件并重新构建项目
+
+```jsx
+// 替换前
+<div className="w-full max-w-md h-32 bg-slate-100 rounded-lg flex items-center justify-center">
+  <span className="text-sm text-slate-400">Google AdSense 广告位</span>
+</div>
+
+// 替换后（示例）
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+     data-ad-slot="XXXXXXXXXX"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+```
+
+## Microsoft Clarity 使用说明
+
+1. 打开 `src/pages/index.astro` 文件
+2. 找到 Microsoft Clarity 统计代码（大约在第 20-26 行）
+3. 如果需要更改跟踪 ID，修改 `vtzz5hczt5` 为您的 Microsoft Clarity 项目 ID
+4. 保存文件并重新构建项目
+
+```javascript
+// 示例代码
+(function(c,l,a,r,i,t,y){
+  c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+  t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+  y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+})(window, document, "clarity", "script", "vtzz5hczt5");
+```
