@@ -192,7 +192,13 @@ export function ConverterApp() {
       return;
     }
 
-    // 始终打包为 ZIP 下载
+    // 单张图片直接下载，2张及以上打包为 ZIP
+    if (allImages.length === 1) {
+      downloadImage(allImages[0]);
+      pushNotice(`已下载 ${allImages[0].fileName}`, "success");
+      return;
+    }
+
     exportAsZip(allImages)
       .then((zipName) => pushNotice(`已下载 ${zipName}`, "success"))
       .catch((error) => {
