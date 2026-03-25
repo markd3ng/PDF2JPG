@@ -25,7 +25,7 @@ export function ResultActions({ images, onCopy, onDownload, onDownloadAll }: Res
       <CardHeader>
         <CardTitle>转换结果</CardTitle>
         <CardDescription>
-          单页可直接复制或下载。总图片 {images.length} 张，超过 5 张会自动打包 ZIP。
+          单页可直接复制或下载。点击"下载全部"将打包为 ZIP 压缩包。
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">

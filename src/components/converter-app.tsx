@@ -192,18 +192,13 @@ export function ConverterApp() {
       return;
     }
 
-    if (allImages.length > 5) {
-      exportAsZip(allImages)
-        .then((zipName) => pushNotice(`已下载 ${zipName}`, "success"))
-        .catch((error) => {
-          console.error("ZIP 下载失败", error);
-          pushNotice("ZIP 下载失败", "error");
-        });
-      return;
-    }
-
-    allImages.forEach((image) => downloadImage(image));
-    pushNotice(`已下载 ${allImages.length} 张 JPG 图片。`, "success");
+    // 始终打包为 ZIP 下载
+    exportAsZip(allImages)
+      .then((zipName) => pushNotice(`已下载 ${zipName}`, "success"))
+      .catch((error) => {
+        console.error("ZIP 下载失败", error);
+        pushNotice("ZIP 下载失败", "error");
+      });
   }, [allImages, pushNotice]);
 
   const handleCopy = useCallback(
