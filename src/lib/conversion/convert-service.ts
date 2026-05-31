@@ -1,6 +1,6 @@
 import { DPI_MAP } from "@/lib/conversion/dpi";
 import type { ConvertedImage, DpiPreset } from "@/lib/types";
-import { PdfWorkerClient } from "@/lib/conversion/pdf-worker-client";
+import type { PdfWorkerClient } from "@/lib/conversion/pdf-worker-client";
 
 export function createTaskId(file: File) {
   return `${file.name}-${file.size}-${crypto.randomUUID()}`;

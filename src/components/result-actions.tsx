@@ -1,9 +1,11 @@
-import { Download, Copy, Archive, Image as ImageIcon } from "lucide-react";
+import { Download, Copy, Archive, Image as ImageIcon, Trash2 } from "lucide-react";
 import type { ConvertedImage } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface ResultActionsProps {
   images: ConvertedImage[];
+  canClearCompleted: boolean;
+  onClearCompleted: () => void;
   onCopy: (image: ConvertedImage) => void;
   onDownload: (image: ConvertedImage) => void;
   onDownloadAll: () => void;
@@ -19,7 +21,7 @@ function formatSize(bytes: number) {
   return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 }
 
-export function ResultActions({ images, onCopy, onDownload, onDownloadAll }: ResultActionsProps) {
+export function ResultActions({ images, canClearCompleted, onClearCompleted, onCopy, onDownload, onDownloadAll }: ResultActionsProps) {
   return (
     <Card>
       <CardHeader>
@@ -29,15 +31,29 @@ export function ResultActions({ images, onCopy, onDownload, onDownloadAll }: Res
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        {images.length > 0 ? (
-          <button
-            type="button"
-            onClick={onDownloadAll}
-            className="inline-flex w-fit items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 active:scale-[0.98] cursor-pointer"
-          >
-            <Archive className="h-4 w-4" />
-            下载全部
-          </button>
+        {images.length > 0 || canClearCompleted ? (
+          <div className="flex flex-wrap gap-2">
+            {images.length > 0 ? (
+              <button
+                type="button"
+                onClick={onDownloadAll}
+                className="inline-flex w-fit items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 active:scale-[0.98] cursor-pointer"
+              >
+                <Archive className="h-4 w-4" />
+                下载全部
+              </button>
+            ) : null}
+            {canClearCompleted ? (
+              <button
+                type="button"
+                onClick={onClearCompleted}
+                className="inline-flex w-fit items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 active:scale-[0.98] cursor-pointer"
+              >
+                <Trash2 className="h-4 w-4" />
+                清除已完成
+              </button>
+            ) : null}
+          </div>
         ) : null}
 
         {images.length === 0 ? (

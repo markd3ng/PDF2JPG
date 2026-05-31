@@ -2,7 +2,8 @@
 
 一个基于 `Astro + React + pdf.js` 的纯前端 PDF 转 JPG 工具。
 
-- 全程浏览器本地处理，不上传文件
+- PDF 文件在浏览器本地处理，不由本工具上传
+- 页面加载 Microsoft Clarity，用于匿名使用统计与体验改进
 - 支持批量拖拽多个 PDF
 - 支持 `72 / 150 / 300 DPI` 画质预设
 - 支持逐页导出 JPG
@@ -19,7 +20,7 @@
 
 ## 技术栈
 
-- `Astro 5`
+- `Astro 6`
 - `React 18`
 - `Tailwind CSS 4`
 - `pdf.js`
@@ -63,6 +64,7 @@ npm run dev
 npm run build
 npm run preview
 npm run check
+npm test
 ```
 
 ## 部署说明
@@ -137,7 +139,8 @@ npm run build
 ## 浏览器与使用说明
 
 - 推荐使用最新版 `Chrome / Edge / Firefox`
-- PDF 转换在浏览器端完成，文件不会上传到服务器
+- PDF 转换在浏览器端完成，文件不会由本工具上传到服务器
+- 页面包含 Microsoft Clarity 统计脚本，会向 Microsoft 加载匿名使用统计相关资源
 - 若在 IDE 内嵌预览中测试复制图片失败，通常是剪贴板权限限制；在正式 HTTPS 域名下访问更稳定
 - 大文件或高 DPI 转换时会占用更多内存，建议分批处理
 
@@ -188,6 +191,8 @@ public/
 ```
 
 ## Microsoft Clarity 使用说明
+
+本项目保留 Microsoft Clarity 用于匿名使用统计与体验分析。Clarity 不参与 PDF 转换流程，PDF 文件仍只在浏览器本地处理；但页面会加载来自 Microsoft 的统计脚本，部署时请确保页面隐私说明与实际统计策略一致。
 
 1. 打开 `src/pages/index.astro` 文件
 2. 找到 Microsoft Clarity 统计代码（大约在第 20-26 行）

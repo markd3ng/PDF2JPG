@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ConversionTask, ConvertedImage, DpiPreset } from "@/lib/types";
-import { PdfWorkerClient } from "@/lib/conversion/pdf-worker-client";
 import { convertTaskFile, createTaskId, flattenImages, pagesToImages, revokeImages } from "@/lib/conversion/convert-service";
+import type { PdfWorkerClient } from "@/lib/conversion/pdf-worker-client";
 import { copyBlobToClipboard } from "@/lib/download/clipboard";
 import { downloadImage } from "@/lib/download/file-download";
-import { exportAsZip } from "@/lib/download/zip-export";
+import { downloadAllImages, loadZipExporter } from "@/lib/download/download-all";
+import { clearCompletedTasks } from "@/lib/conversion/task-state";
 import { FileDropzone } from "@/components/file-dropzone";
 import { DpiSelector } from "@/components/dpi-selector";
 import { ProcessingList } from "@/components/processing-list";
@@ -22,10 +23,6 @@ const NOTICE_STYLES: Record<NoticeTone, string> = {
 
 export function ConverterApp() {
   const workerClientRef = useRef<PdfWorkerClient | null>(null);
-  if (typeof window !== "undefined" && !workerClientRef.current) {
-    workerClientRef.current = new PdfWorkerClient();
-  }
-  const workerClient = workerClientRef.current!;
   const [dpi, setDpi] = useState<DpiPreset>("150");
   const [tasks, setTasks] = useState<ConversionTask[]>([]);
   const [isWorking, setIsWorking] = useState(false);
@@ -65,9 +62,18 @@ export function ConverterApp() {
     return () => {
       const allImages = flattenImages(taskRef.current.map((task) => task.images));
       revokeImages(allImages);
-      workerClient.terminate();
+      workerClientRef.current?.terminate();
     };
-  }, [workerClient]);
+  }, []);
+
+  const getWorkerClient = useCallback(async () => {
+    if (!workerClientRef.current) {
+      const { PdfWorkerClient } = await import("@/lib/conversion/pdf-worker-client");
+      workerClientRef.current = new PdfWorkerClient();
+    }
+
+    return workerClientRef.current;
+  }, []);
 
   const onFilesSelected = useCallback(
     (files: File[]) => {
@@ -104,108 +110,126 @@ export function ConverterApp() {
 
     setIsWorking(true);
 
-    for (const queuedTask of queue) {
-      commitTasks((prev) =>
-        prev.map((task) =>
-          task.id === queuedTask.id
-            ? { ...task, status: "processing", progress: 1, donePages: 0, pageCount: task.pageCount || 1, errorMessage: undefined }
-            : task
-        )
-      );
+    try {
+      const workerClient = await getWorkerClient();
 
-      const result = await convertTaskFile(queuedTask.file, dpi, workerClient, (currentPage, totalPages) => {
+      for (const queuedTask of queue) {
         commitTasks((prev) =>
           prev.map((task) =>
             task.id === queuedTask.id
-              ? {
-                  ...task,
-                  donePages: currentPage,
-                  pageCount: totalPages,
-                  progress: (currentPage / totalPages) * 100
-                }
+              ? { ...task, status: "processing", progress: 1, donePages: 0, pageCount: task.pageCount || 1, errorMessage: undefined }
               : task
           )
         );
-      })
-        .then((pages) => ({ ok: true as const, pages }))
-        .catch((error: Error) => ({ ok: false as const, error }));
 
-      if (result.ok) {
-        const images = pagesToImages(queuedTask.id, result.pages);
-        commitTasks((prev) =>
-          prev.map((task) => {
-            if (task.id !== queuedTask.id) {
-              return task;
-            }
-            revokeImages(task.images);
-            return {
-              ...task,
-              status: "done",
-              donePages: images.length,
-              pageCount: images.length,
-              progress: 100,
-              images,
-              errorMessage: undefined
-            };
-          })
-        );
-      } else {
-        const message = result.error.message || "转换失败，请检查 PDF 是否损坏或加密。";
-        commitTasks((prev) =>
-          prev.map((task) =>
-            task.id === queuedTask.id
-              ? {
-                  ...task,
-                  status: "error",
-                  progress: 0,
-                  donePages: 0,
-                  pageCount: 0,
-                  errorMessage: message
-                }
-              : task
-          )
-        );
-        pushNotice(`${queuedTask.file.name} 转换失败`, "error");
-      }
-    }
-
-    const allImages = flattenImages(taskRef.current.map((task) => task.images));
-    if (allImages.length > 5) {
-      exportAsZip(allImages)
-        .then((zipName) => {
-          pushNotice(`已自动打包并下载：${zipName}`, "success");
+        const result = await convertTaskFile(queuedTask.file, dpi, workerClient, (currentPage, totalPages) => {
+          commitTasks((prev) =>
+            prev.map((task) =>
+              task.id === queuedTask.id
+                ? {
+                    ...task,
+                    donePages: currentPage,
+                    pageCount: totalPages,
+                    progress: (currentPage / totalPages) * 100
+                  }
+                : task
+            )
+          );
         })
-        .catch((error) => {
-          console.error("ZIP 打包失败", error);
-          pushNotice("ZIP 打包失败，请稍后重试。", "error");
-        });
-    }
+          .then((pages) => ({ ok: true as const, pages }))
+          .catch((error: Error) => ({ ok: false as const, error }));
 
-    setIsWorking(false);
-    pushNotice("所有可执行任务已处理完成。", "success");
-  }, [commitTasks, dpi, pushNotice, workerClient]);
+        if (result.ok) {
+          const images = pagesToImages(queuedTask.id, result.pages);
+          commitTasks((prev) =>
+            prev.map((task) => {
+              if (task.id !== queuedTask.id) {
+                return task;
+              }
+              revokeImages(task.images);
+              return {
+                ...task,
+                status: "done",
+                donePages: images.length,
+                pageCount: images.length,
+                progress: 100,
+                images,
+                errorMessage: undefined
+              };
+            })
+          );
+        } else {
+          const message = result.error.message || "转换失败，请检查 PDF 是否损坏或加密。";
+          commitTasks((prev) =>
+            prev.map((task) =>
+              task.id === queuedTask.id
+                ? {
+                    ...task,
+                    status: "error",
+                    progress: 0,
+                    donePages: 0,
+                    pageCount: 0,
+                    errorMessage: message
+                  }
+                : task
+            )
+          );
+          pushNotice(`${queuedTask.file.name} 转换失败`, "error");
+        }
+      }
+
+      const allImages = flattenImages(taskRef.current.map((task) => task.images));
+      if (allImages.length > 5) {
+        loadZipExporter()
+          .then((exportAsZip) => exportAsZip(allImages))
+          .then((zipName) => {
+            pushNotice(`已自动打包并下载：${zipName}`, "success");
+          })
+          .catch((error) => {
+            console.error("ZIP 打包失败", error);
+            pushNotice("ZIP 打包失败，请稍后重试。", "error");
+          });
+      }
+
+      pushNotice("所有可执行任务已处理完成。", "success");
+    } catch (error) {
+      console.error("转换模块加载失败", error);
+      pushNotice("转换模块加载失败，请刷新页面后重试。", "error");
+    } finally {
+      setIsWorking(false);
+    }
+  }, [commitTasks, dpi, getWorkerClient, pushNotice]);
 
   const allImages = useMemo(() => flattenImages(tasks.map((task) => task.images)), [tasks]);
+  const canClearCompleted = useMemo(() => tasks.some((task) => task.status === "done"), [tasks]);
 
   const handleDownloadAll = useCallback(() => {
-    if (allImages.length === 0) {
-      return;
-    }
-
-    // 单张图片直接下载，2张及以上打包为 ZIP
-    if (allImages.length === 1) {
-      downloadImage(allImages[0]);
-      pushNotice(`已下载 ${allImages[0].fileName}`, "success");
-      return;
-    }
-
-    exportAsZip(allImages)
-      .then((zipName) => pushNotice(`已下载 ${zipName}`, "success"))
+    downloadAllImages(allImages)
+      .then((result) => {
+        if (result.type === "none") {
+          return;
+        }
+        pushNotice(`已下载 ${result.fileName}`, "success");
+      })
       .catch((error) => {
         console.error("ZIP 下载失败", error);
         pushNotice("ZIP 下载失败", "error");
       });
   }, [allImages, pushNotice]);
+
+  const handleClearCompleted = useCallback(() => {
+    let clearedCount = 0;
+
+    commitTasks((prev) => {
+      const result = clearCompletedTasks(prev, revokeImages);
+      clearedCount = result.clearedCount;
+      return result.tasks;
+    });
+
+    if (clearedCount > 0) {
+      pushNotice("已清除已完成任务和结果图片。", "success");
+    }
+  }, [commitTasks, pushNotice]);
 
   const handleCopy = useCallback(
     (image: ConvertedImage) => {
@@ -225,7 +249,7 @@ export function ConverterApp() {
       <header className="fixed inset-x-0 top-0 z-50 border-b border-white/60 bg-white/70 backdrop-blur-xl">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <h1 className="text-[22px] font-bold tracking-tight text-slate-900">PDF2JPG</h1>
-          <p className="text-sm text-slate-600">完全本地转换 · 无文件上传</p>
+          <p className="text-sm text-slate-600">文件本地转换 · 不上传 PDF</p>
         </div>
       </header>
 
@@ -235,6 +259,10 @@ export function ConverterApp() {
             {notice.message}
           </div>
         ) : null}
+
+        <div className="rounded-xl border border-slate-200 bg-white/75 px-4 py-3 text-sm text-slate-600 shadow-sm">
+          PDF 文件仅在浏览器本地处理，不由本工具上传。页面会加载 Microsoft Clarity，用于匿名使用统计与体验改进。
+        </div>
 
         {/* Google AdSense 广告框 */}
         <div className="rounded-xl bg-white p-4 shadow-sm">
@@ -268,6 +296,8 @@ export function ConverterApp() {
 
         <ResultActions
           images={allImages}
+          canClearCompleted={canClearCompleted}
+          onClearCompleted={handleClearCompleted}
           onCopy={handleCopy}
           onDownload={downloadImage}
           onDownloadAll={handleDownloadAll}
