@@ -1,6 +1,26 @@
 ---
 import "@/styles/global.css";
 import { ConverterApp } from "@/components/converter-app";
+import { execSync } from "node:child_process";
+
+const commitRef = getCommitRef();
+
+function getCommitRef() {
+  const envCommit =
+    import.meta.env.PUBLIC_COMMIT_SHA ||
+    import.meta.env.CF_PAGES_COMMIT_SHA ||
+    import.meta.env.VERCEL_GIT_COMMIT_SHA;
+
+  if (envCommit) {
+    return envCommit.slice(0, 7);
+  }
+
+  try {
+    return execSync("git rev-parse --short HEAD", { encoding: "utf-8" }).trim();
+  } catch {
+    return "unknown";
+  }
+}
 ---
 
 <html lang="zh-CN">
@@ -26,6 +46,6 @@ import { ConverterApp } from "@/components/converter-app";
     </script>
   </head>
   <body>
-    <ConverterApp client:load />
+    <ConverterApp commitRef={commitRef} client:load />
   </body>
 </html>

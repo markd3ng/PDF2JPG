@@ -21,7 +21,11 @@ const NOTICE_STYLES: Record<NoticeTone, string> = {
   error: "border-red-200 bg-red-50 text-red-700"
 };
 
-export function ConverterApp() {
+interface ConverterAppProps {
+  commitRef: string;
+}
+
+export function ConverterApp({ commitRef }: ConverterAppProps) {
   const workerClientRef = useRef<PdfWorkerClient | null>(null);
   const [dpi, setDpi] = useState<DpiPreset>("150");
   const [tasks, setTasks] = useState<ConversionTask[]>([]);
@@ -260,10 +264,6 @@ export function ConverterApp() {
           </div>
         ) : null}
 
-        <div className="rounded-xl border border-slate-200 bg-white/75 px-4 py-3 text-sm text-slate-600 shadow-sm">
-          PDF 文件仅在浏览器本地处理，不由本工具上传。页面会加载 Microsoft Clarity，用于匿名使用统计与体验改进。
-        </div>
-
         {/* Google AdSense 广告框 */}
         <div className="rounded-xl bg-white p-4 shadow-sm">
           <div className="text-center text-sm text-slate-500 mb-2">广告</div>
@@ -303,6 +303,20 @@ export function ConverterApp() {
           onDownloadAll={handleDownloadAll}
         />
       </main>
+
+      <footer className="border-t border-white/60 bg-white/70 backdrop-blur-xl">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-2 px-4 py-4 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+          <p>PDF 文件仅在浏览器本地处理，不由本工具上传。页面会加载 Microsoft Clarity，用于匿名使用统计与体验改进。</p>
+          <a
+            href={`https://github.com/markd3ng/PDF2JPG/commit/${commitRef}`}
+            target="_blank"
+            rel="noreferrer"
+            className="font-mono font-semibold text-slate-600 transition hover:text-blue-600 sm:text-right"
+          >
+            GitHub commit {commitRef}
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }
