@@ -8,23 +8,23 @@ interface ProcessingListProps {
 }
 
 const STATUS_TEXT: Record<ConversionTask["status"], string> = {
-  pending: "待处理",
-  processing: "处理中",
-  done: "完成",
-  error: "失败"
+  pending: "Pending",
+  processing: "Processing",
+  done: "Done",
+  error: "Failed"
 };
 
 export function ProcessingList({ tasks }: ProcessingListProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>任务队列</CardTitle>
-        <CardDescription>实时展示每个文件的处理进度与状态。</CardDescription>
+        <CardTitle>Conversion queue</CardTitle>
+        <CardDescription>Track each file as pages are rendered and exported.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {tasks.length === 0 ? (
           <p className="rounded-xl border border-dashed border-slate-300 bg-white/70 p-6 text-sm text-slate-500">
-            还没有任务。请拖入 PDF 文件开始转换。
+            No files yet. Drop PDF files here to start converting.
           </p>
         ) : null}
         {tasks.map((task) => (
@@ -44,7 +44,7 @@ export function ProcessingList({ tasks }: ProcessingListProps) {
             <Progress value={task.progress} />
             <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
               <span>
-                {task.donePages}/{task.pageCount || "?"} 页
+                {task.donePages}/{task.pageCount || "?"} pages
               </span>
               <span>{Math.round(task.progress)}%</span>
             </div>

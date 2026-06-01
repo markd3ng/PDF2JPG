@@ -22,16 +22,16 @@ export function FileDropzone({ disabled = false, onFiles, children }: FileDropzo
       onFiles(acceptedFiles);
     },
     onDropRejected: (rejections) => {
-      const reason = rejections[0]?.errors[0]?.message ?? "文件不符合要求";
-      console.error("文件被拒绝", reason);
+      const reason = rejections[0]?.errors[0]?.message ?? "The file does not meet the upload requirements.";
+      console.error("File rejected", reason);
     }
   });
 
   return (
     <Card className="shine">
       <CardHeader>
-        <CardTitle>批量拖拽上传</CardTitle>
-        <CardDescription>支持多个 PDF 文件，单文件建议不超过 50MB。文件仅在浏览器本地处理。</CardDescription>
+        <CardTitle>Upload PDFs</CardTitle>
+        <CardDescription>Drop multiple PDF files at once. Each file should be 50MB or smaller.</CardDescription>
       </CardHeader>
       <CardContent>
         <section
@@ -45,8 +45,8 @@ export function FileDropzone({ disabled = false, onFiles, children }: FileDropzo
         >
           <input {...getInputProps()} />
           <UploadCloud className="mb-3 h-12 w-12 text-blue-600" />
-          <p className="text-base font-semibold text-slate-800">将 PDF 文件拖放到这里，或点击选择文件</p>
-          <p className="mt-2 text-sm text-slate-500">支持批量处理，自动保持每页顺序并生成 JPG。</p>
+          <p className="text-base font-semibold text-slate-800">Drop PDF files here, or click to choose files</p>
+          <p className="mt-2 text-sm text-slate-500">Files are processed locally and exported page by page.</p>
         </section>
         {children && (
           <div className="mt-4">

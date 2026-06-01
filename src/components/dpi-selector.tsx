@@ -12,8 +12,8 @@ export function DpiSelector({ value, onChange }: DpiSelectorProps) {
   return (
     <Card className="shine">
       <CardHeader>
-        <CardTitle>DPI 画质预设</CardTitle>
-        <CardDescription>更高 DPI 会提升清晰度，也会增加处理时间和内存占用。</CardDescription>
+        <CardTitle>Quality</CardTitle>
+        <CardDescription>Higher DPI improves clarity, but uses more processing time and memory.</CardDescription>
       </CardHeader>
       <CardContent>
         <Tabs value={value} onValueChange={(next) => onChange(next as DpiPreset)}>

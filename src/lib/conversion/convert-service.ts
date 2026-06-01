@@ -1,5 +1,5 @@
 import { DPI_MAP } from "@/lib/conversion/dpi";
-import type { ConvertedImage, DpiPreset } from "@/lib/types";
+import type { ConvertedImage, DpiPreset, OutputFormat } from "@/lib/types";
 import type { PdfWorkerClient } from "@/lib/conversion/pdf-worker-client";
 
 export function createTaskId(file: File) {
@@ -9,11 +9,12 @@ export function createTaskId(file: File) {
 export function convertTaskFile(
   file: File,
   dpiPreset: DpiPreset,
+  outputFormat: OutputFormat,
   workerClient: PdfWorkerClient,
   onProgress?: (currentPage: number, totalPages: number) => void
 ) {
   const dpi = DPI_MAP[dpiPreset];
-  return workerClient.convert(file, dpi.scale, dpi.quality, (message) => {
+  return workerClient.convert(file, dpi.scale, dpi.quality, outputFormat, (message) => {
     onProgress?.(message.page, message.pageCount);
   });
 }

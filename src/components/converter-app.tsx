@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { ConversionTask, ConvertedImage, DpiPreset } from "@/lib/types";
+import type { ConversionTask, ConvertedImage, DpiPreset, OutputFormat } from "@/lib/types";
 import { convertTaskFile, createTaskId, flattenImages, pagesToImages, revokeImages } from "@/lib/conversion/convert-service";
 import type { PdfWorkerClient } from "@/lib/conversion/pdf-worker-client";
+import { DEFAULT_OUTPUT_FORMAT } from "@/lib/conversion/output-format";
 import { copyBlobToClipboard } from "@/lib/download/clipboard";
 import { downloadImage } from "@/lib/download/file-download";
 import { downloadAllImages, loadZipExporter } from "@/lib/download/download-all";
 import { clearCompletedTasks } from "@/lib/conversion/task-state";
 import { FileDropzone } from "@/components/file-dropzone";
 import { DpiSelector } from "@/components/dpi-selector";
+import { OutputFormatSelector } from "@/components/output-format-selector";
 import { ProcessingList } from "@/components/processing-list";
 import { ResultActions } from "@/components/result-actions";
 
@@ -28,6 +30,7 @@ interface ConverterAppProps {
 export function ConverterApp({ commitRef }: ConverterAppProps) {
   const workerClientRef = useRef<PdfWorkerClient | null>(null);
   const [dpi, setDpi] = useState<DpiPreset>("150");
+  const [outputFormat, setOutputFormat] = useState<OutputFormat>(DEFAULT_OUTPUT_FORMAT);
   const [tasks, setTasks] = useState<ConversionTask[]>([]);
   const [isWorking, setIsWorking] = useState(false);
   const [notice, setNotice] = useState<{ tone: NoticeTone; message: string } | null>(null);
@@ -83,7 +86,7 @@ export function ConverterApp({ commitRef }: ConverterAppProps) {
     (files: File[]) => {
       const validFiles = files.filter((file) => file.size <= MAX_FILE_SIZE);
       if (validFiles.length !== files.length) {
-        pushNotice("存在超过 50MB 的文件，已自动忽略。", "error");
+        pushNotice("Files larger than 50MB were ignored.", "error");
       }
       if (validFiles.length === 0) {
         return;
@@ -100,7 +103,7 @@ export function ConverterApp({ commitRef }: ConverterAppProps) {
       }));
 
       commitTasks((prev) => [...prev, ...newTasks]);
-      pushNotice(`已加入 ${newTasks.length} 个文件，准备转换。`, "success");
+      pushNotice(`${newTasks.length} file${newTasks.length === 1 ? "" : "s"} added and ready to convert.`, "success");
     },
     [commitTasks, pushNotice]
   );
@@ -108,7 +111,7 @@ export function ConverterApp({ commitRef }: ConverterAppProps) {
   const processTasks = useCallback(async () => {
     const queue = taskRef.current.filter((task) => task.status === "pending" || task.status === "error");
     if (queue.length === 0) {
-      pushNotice("当前没有可执行任务。", "info");
+      pushNotice("There are no files ready to convert.", "info");
       return;
     }
 
@@ -126,7 +129,7 @@ export function ConverterApp({ commitRef }: ConverterAppProps) {
           )
         );
 
-        const result = await convertTaskFile(queuedTask.file, dpi, workerClient, (currentPage, totalPages) => {
+        const result = await convertTaskFile(queuedTask.file, dpi, outputFormat, workerClient, (currentPage, totalPages) => {
           commitTasks((prev) =>
             prev.map((task) =>
               task.id === queuedTask.id
@@ -163,7 +166,7 @@ export function ConverterApp({ commitRef }: ConverterAppProps) {
             })
           );
         } else {
-          const message = result.error.message || "转换失败，请检查 PDF 是否损坏或加密。";
+          const message = result.error.message || "Conversion failed. Check whether the PDF is damaged or encrypted.";
           commitTasks((prev) =>
             prev.map((task) =>
               task.id === queuedTask.id
@@ -178,7 +181,7 @@ export function ConverterApp({ commitRef }: ConverterAppProps) {
                 : task
             )
           );
-          pushNotice(`${queuedTask.file.name} 转换失败`, "error");
+          pushNotice(`${queuedTask.file.name} failed to convert.`, "error");
         }
       }
 
@@ -187,22 +190,22 @@ export function ConverterApp({ commitRef }: ConverterAppProps) {
         loadZipExporter()
           .then((exportAsZip) => exportAsZip(allImages))
           .then((zipName) => {
-            pushNotice(`已自动打包并下载：${zipName}`, "success");
+            pushNotice(`Automatically packed and downloaded ${zipName}.`, "success");
           })
           .catch((error) => {
-            console.error("ZIP 打包失败", error);
-            pushNotice("ZIP 打包失败，请稍后重试。", "error");
+            console.error("ZIP export failed", error);
+            pushNotice("ZIP export failed. Please try again.", "error");
           });
       }
 
-      pushNotice("所有可执行任务已处理完成。", "success");
+      pushNotice("All ready files have been processed.", "success");
     } catch (error) {
-      console.error("转换模块加载失败", error);
-      pushNotice("转换模块加载失败，请刷新页面后重试。", "error");
+      console.error("Conversion module failed to load", error);
+      pushNotice("The conversion module failed to load. Refresh the page and try again.", "error");
     } finally {
       setIsWorking(false);
     }
-  }, [commitTasks, dpi, getWorkerClient, pushNotice]);
+  }, [commitTasks, dpi, getWorkerClient, outputFormat, pushNotice]);
 
   const allImages = useMemo(() => flattenImages(tasks.map((task) => task.images)), [tasks]);
   const canClearCompleted = useMemo(() => tasks.some((task) => task.status === "done"), [tasks]);
@@ -213,11 +216,11 @@ export function ConverterApp({ commitRef }: ConverterAppProps) {
         if (result.type === "none") {
           return;
         }
-        pushNotice(`已下载 ${result.fileName}`, "success");
+        pushNotice(`Downloaded ${result.fileName}.`, "success");
       })
       .catch((error) => {
-        console.error("ZIP 下载失败", error);
-        pushNotice("ZIP 下载失败", "error");
+        console.error("ZIP download failed", error);
+        pushNotice("ZIP download failed.", "error");
       });
   }, [allImages, pushNotice]);
 
@@ -231,7 +234,7 @@ export function ConverterApp({ commitRef }: ConverterAppProps) {
     });
 
     if (clearedCount > 0) {
-      pushNotice("已清除已完成任务和结果图片。", "success");
+      pushNotice("Completed files and converted images were cleared.", "success");
     }
   }, [commitTasks, pushNotice]);
 
@@ -239,9 +242,9 @@ export function ConverterApp({ commitRef }: ConverterAppProps) {
     (image: ConvertedImage) => {
       copyBlobToClipboard(image.blob).then((ok) => {
         if (ok) {
-          pushNotice(`已复制：${image.fileName}`, "success");
+          pushNotice(`Copied ${image.fileName}.`, "success");
         } else {
-          pushNotice("复制失败，请检查浏览器权限。", "error");
+          pushNotice("Copy failed. Check your browser permissions.", "error");
         }
       });
     },
@@ -252,8 +255,8 @@ export function ConverterApp({ commitRef }: ConverterAppProps) {
     <div className="flex min-h-screen flex-col">
       <header className="fixed inset-x-0 top-0 z-50 border-b border-white/60 bg-white/70 backdrop-blur-xl">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <h1 className="text-[22px] font-bold tracking-tight text-slate-900">PDF2JPG</h1>
-          <p className="text-sm text-slate-600">文件本地转换 · 不上传 PDF</p>
+          <h1 className="text-[22px] font-bold tracking-tight text-slate-900">PDF Converter</h1>
+          <p className="text-sm text-slate-600">Private browser-based PDF to image conversion</p>
         </div>
       </header>
 
@@ -264,13 +267,13 @@ export function ConverterApp({ commitRef }: ConverterAppProps) {
           </div>
         ) : null}
 
-        {/* Google AdSense 广告框 */}
+        {/* Google AdSense ad slot */}
         <div className="rounded-xl bg-white p-4 shadow-sm">
-          <div className="text-center text-sm text-slate-500 mb-2">广告</div>
+          <div className="mb-2 text-center text-sm text-slate-500">Advertisement</div>
           <div className="flex justify-center">
-            {/* 这里是 Google AdSense 广告代码占位符 */}
+            {/* Replace this placeholder with Google AdSense code. */}
             <div className="w-full max-w-md h-32 bg-slate-100 rounded-lg flex items-center justify-center">
-              <span className="text-sm text-slate-400">Google AdSense 广告位</span>
+              <span className="text-sm text-slate-400">Google AdSense slot</span>
             </div>
           </div>
         </div>
@@ -285,11 +288,14 @@ export function ConverterApp({ commitRef }: ConverterAppProps) {
                   disabled={isWorking || tasks.length === 0}
                   className="inline-flex w-fit items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-sky-500 px-5 py-2.5 text-sm font-semibold text-white shadow transition hover:from-blue-500 hover:to-sky-400 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
                 >
-                  {isWorking ? "处理中..." : "开始转换"}
+                  {isWorking ? "Processing..." : "Convert"}
                 </button>
               </div>
             </FileDropzone>
-            <DpiSelector value={dpi} onChange={setDpi} />
+            <div className="grid gap-5 lg:grid-cols-[2fr_1fr]">
+              <DpiSelector value={dpi} onChange={setDpi} />
+              <OutputFormatSelector value={outputFormat} onChange={setOutputFormat} />
+            </div>
           </div>
           <ProcessingList tasks={tasks} />
         </section>
@@ -306,7 +312,7 @@ export function ConverterApp({ commitRef }: ConverterAppProps) {
 
       <footer className="border-t border-white/60 bg-white/70 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-2 px-4 py-4 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-          <p>PDF 文件仅在浏览器本地处理，不由本工具上传。页面会加载 Microsoft Clarity，用于匿名使用统计与体验改进。</p>
+          <p>PDF files are processed locally in your browser and are not uploaded by this tool. This page loads Microsoft Clarity for anonymous usage analytics.</p>
           <a
             href={`https://github.com/markd3ng/PDF2JPG/commit/${commitRef}`}
             target="_blank"

@@ -4,6 +4,32 @@ import { ConverterApp } from "@/components/converter-app";
 import { execSync } from "node:child_process";
 
 const commitRef = getCommitRef();
+const siteUrl = "https://pdf.q9m3.com/";
+const pageTitle = "PDF Converter | Convert PDF to JPG, PNG, WebP, or BMP";
+const pageDescription =
+  "Convert PDF pages to JPG, PNG, WebP, or BMP images in your browser. Free, private, batch-friendly PDF conversion with no file uploads.";
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "PDF Converter",
+  url: siteUrl,
+  applicationCategory: "UtilitiesApplication",
+  operatingSystem: "Any",
+  description: pageDescription,
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD"
+  },
+  featureList: [
+    "Convert PDF pages to JPG images",
+    "Convert PDF pages to PNG images",
+    "Convert PDF pages to WebP images",
+    "Convert PDF pages to BMP images",
+    "Batch PDF conversion",
+    "Browser-based local file processing"
+  ]
+};
 
 function getCommitRef() {
   const envCommit =
@@ -23,20 +49,26 @@ function getCommitRef() {
 }
 ---
 
-<html lang="zh-CN">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PDF2JPG · 浏览器本地转换</title>
-    <meta name="description" content="PDF2JPG 支持将 PDF 文件批量转换为 JPG 图片，文件仅在浏览器本地处理，不由本工具上传；页面会加载 Microsoft Clarity 用于匿名使用统计。" />
-    <meta name="keywords" content="PDF转JPG, PDF2JPG, PDF转图片, 在线PDF转换, 本地PDF转换, 批量PDF转换" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription} />
+    <meta name="keywords" content="PDF converter, PDF to JPG, PDF to PNG, PDF to WebP, PDF to BMP, convert PDF to image, browser PDF converter, private PDF conversion, batch PDF converter" />
     <meta name="robots" content="index, follow" />
-    <meta name="author" content="PDF2JPG Team" />
-    <meta property="og:title" content="PDF2JPG · 浏览器本地转换" />
-    <meta property="og:description" content="PDF2JPG 支持将 PDF 文件批量转换为 JPG 图片，文件仅在浏览器本地处理，不由本工具上传；页面会加载 Microsoft Clarity 用于匿名使用统计。" />
+    <meta name="author" content="PDF Converter" />
+    <link rel="canonical" href={siteUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://pdf2jpg.example.com" />
-    <!-- Microsoft Clarity 统计代码 -->
+    <meta property="og:url" content={siteUrl} />
+    <meta property="og:site_name" content="PDF Converter" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    <!-- Microsoft Clarity analytics -->
     <script is:inline type="text/javascript">
       (function(c,l,a,r,i,t,y){
         c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};

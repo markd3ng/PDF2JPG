@@ -1,13 +1,11 @@
 /**
- * 将 Blob 转换为 PNG 格式（剪贴板 API 主要支持 PNG）
+ * Converts image blobs to PNG because the Clipboard API primarily supports PNG images.
  */
 async function convertToPng(blob: Blob): Promise<Blob> {
-  // 如果已经是 PNG，直接返回
   if (blob.type === "image/png") {
     return blob;
   }
 
-  // 将 Blob 转换为 ImageBitmap，再绘制到 canvas 导出为 PNG
   const bitmap = await createImageBitmap(blob);
   const canvas = document.createElement("canvas");
   canvas.width = bitmap.width;
@@ -15,7 +13,7 @@ async function convertToPng(blob: Blob): Promise<Blob> {
 
   const ctx = canvas.getContext("2d");
   if (!ctx) {
-    throw new Error("无法创建画布上下文");
+    throw new Error("Unable to create a canvas rendering context.");
   }
 
   ctx.drawImage(bitmap, 0, 0);
@@ -27,7 +25,7 @@ async function convertToPng(blob: Blob): Promise<Blob> {
         if (pngBlob) {
           resolve(pngBlob);
         } else {
-          reject(new Error("转换为 PNG 失败"));
+          reject(new Error("PNG conversion failed."));
         }
       },
       "image/png"
@@ -37,18 +35,17 @@ async function convertToPng(blob: Blob): Promise<Blob> {
 
 export async function copyBlobToClipboard(blob: Blob): Promise<boolean> {
   if (!navigator.clipboard || !window.ClipboardItem) {
-    console.error("当前浏览器不支持剪贴板图片写入");
+    console.error("This browser does not support writing images to the clipboard.");
     return false;
   }
 
   try {
-    // 剪贴板 API 主要支持 PNG 格式，需要转换
     const pngBlob = await convertToPng(blob);
     const item = new ClipboardItem({ "image/png": pngBlob });
     await navigator.clipboard.write([item]);
     return true;
   } catch (error) {
-    console.error("复制图片失败", error);
+    console.error("Image copy failed", error);
     return false;
   }
 }

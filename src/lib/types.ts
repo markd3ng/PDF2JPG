@@ -2,6 +2,8 @@ export type TaskStatus = "pending" | "processing" | "done" | "error";
 
 export type DpiPreset = "72" | "150" | "300";
 
+export type OutputFormat = "jpg" | "png" | "webp" | "bmp";
+
 export interface ConvertedImage {
   id: string;
   fileName: string;

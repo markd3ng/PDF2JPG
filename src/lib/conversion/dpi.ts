@@ -14,21 +14,21 @@ export const DPI_OPTIONS: DpiConfig[] = [
   {
     value: "72",
     label: "72 DPI",
-    description: "草稿 · 更快",
+    description: "Draft · faster",
     scale: 72 / BASE_DPI,
     quality: 0.72
   },
   {
     value: "150",
     label: "150 DPI",
-    description: "标准 · 平衡",
+    description: "Standard · balanced",
     scale: 150 / BASE_DPI,
     quality: 0.85
   },
   {
     value: "300",
     label: "300 DPI",
-    description: "高精 · 清晰",
+    description: "High · sharper",
     scale: 300 / BASE_DPI,
     quality: 0.94
   }

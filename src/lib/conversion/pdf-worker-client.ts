@@ -1,6 +1,8 @@
 import { getDocument, GlobalWorkerOptions } from "pdfjs-dist/legacy/build/pdf.mjs";
 import pdfWorkerUrl from "pdfjs-dist/legacy/build/pdf.worker.mjs?url";
-import type { WorkerProgressMessage } from "@/lib/types";
+import { encodeCanvasToBmpBlob } from "@/lib/conversion/bmp-encoder";
+import { buildImageName, getOutputFormatConfig } from "@/lib/conversion/output-format";
+import type { OutputFormat, WorkerProgressMessage } from "@/lib/types";
 
 export interface WorkerConvertedPage {
   page: number;
@@ -20,7 +22,13 @@ export class PdfWorkerClient {
     this.initialized = true;
   }
 
-  async convert(file: File, scale: number, quality: number, onProgress?: (message: WorkerProgressMessage) => void) {
+  async convert(
+    file: File,
+    scale: number,
+    quality: number,
+    outputFormat: OutputFormat,
+    onProgress?: (message: WorkerProgressMessage) => void
+  ) {
     if (this.destroyed) {
       throw new Error("Renderer terminated");
     }
@@ -54,7 +62,7 @@ export class PdfWorkerClient {
 
         const context = canvas.getContext("2d", { alpha: false });
         if (!context) {
-          throw new Error("无法创建画布上下文。");
+          throw new Error("Unable to create a canvas rendering context.");
         }
 
         context.save();
@@ -68,10 +76,10 @@ export class PdfWorkerClient {
           background: "rgb(255,255,255)"
         }).promise;
 
-        const blob = await canvasToJpegBlob(canvas, quality);
+        const blob = await canvasToImageBlob(canvas, quality, outputFormat);
         pages.push({
           page: pageNumber,
-          fileName: buildImageName(file.name, pageNumber),
+          fileName: buildImageName(file.name, pageNumber, outputFormat),
           blob
         });
 
@@ -100,23 +108,27 @@ export class PdfWorkerClient {
   }
 }
 
-function buildImageName(fileName: string, pageNumber: number) {
-  const base = fileName.replace(/\.pdf$/i, "").replace(/\s+/g, "-");
-  return `${base}-p${String(pageNumber).padStart(3, "0")}.jpg`;
-}
+function canvasToImageBlob(canvas: HTMLCanvasElement, quality: number, outputFormat: OutputFormat) {
+  const format = getOutputFormatConfig(outputFormat);
+  if (outputFormat === "bmp") {
+    return Promise.resolve(encodeCanvasToBmpBlob(canvas));
+  }
 
-function canvasToJpegBlob(canvas: HTMLCanvasElement, quality: number) {
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
       (blob) => {
         if (!blob) {
-          reject(new Error("JPG 导出失败。"));
+          reject(new Error(`${format.label} export is not supported by this browser.`));
+          return;
+        }
+        if (blob.type !== format.mimeType) {
+          reject(new Error(`${format.label} export is not supported by this browser.`));
           return;
         }
         resolve(blob);
       },
-      "image/jpeg",
-      quality
+      format.mimeType,
+      format.supportsQuality ? quality : undefined
     );
   });
 }

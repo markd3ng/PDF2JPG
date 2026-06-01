@@ -25,9 +25,9 @@ export function ResultActions({ images, canClearCompleted, onClearCompleted, onC
   return (
     <Card>
       <CardHeader>
-        <CardTitle>转换结果</CardTitle>
+        <CardTitle>Converted images</CardTitle>
         <CardDescription>
-          单页可直接复制或下载。2张及以上点击"下载全部"将打包为 ZIP 压缩包。
+          Copy or download a single page, or download all converted pages as a ZIP archive.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
@@ -40,7 +40,7 @@ export function ResultActions({ images, canClearCompleted, onClearCompleted, onC
                 className="inline-flex w-fit items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 active:scale-[0.98] cursor-pointer"
               >
                 <Archive className="h-4 w-4" />
-                下载全部
+                Download all
               </button>
             ) : null}
             {canClearCompleted ? (
@@ -50,7 +50,7 @@ export function ResultActions({ images, canClearCompleted, onClearCompleted, onC
                 className="inline-flex w-fit items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 active:scale-[0.98] cursor-pointer"
               >
                 <Trash2 className="h-4 w-4" />
-                清除已完成
+                Clear completed
               </button>
             ) : null}
           </div>
@@ -58,7 +58,7 @@ export function ResultActions({ images, canClearCompleted, onClearCompleted, onC
 
         {images.length === 0 ? (
           <p className="rounded-xl border border-dashed border-slate-300 bg-white/70 p-6 text-sm text-slate-500">
-            转换完成后，这里会展示每一页的 JPG 操作项。
+            Converted pages will appear here after processing.
           </p>
         ) : null}
 
@@ -80,7 +80,7 @@ export function ResultActions({ images, canClearCompleted, onClearCompleted, onC
                   className="inline-flex flex-1 items-center justify-center gap-1 rounded-lg border border-slate-300 px-2.5 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-100 cursor-pointer"
                 >
                   <Copy className="h-3.5 w-3.5" />
-                  复制
+                  Copy
                 </button>
                 <button
                   type="button"
@@ -88,7 +88,7 @@ export function ResultActions({ images, canClearCompleted, onClearCompleted, onC
                   className="inline-flex flex-1 items-center justify-center gap-1 rounded-lg bg-blue-600 px-2.5 py-2 text-xs font-medium text-white transition hover:bg-blue-500 cursor-pointer"
                 >
                   <Download className="h-3.5 w-3.5" />
-                  下载
+                  Download
                 </button>
               </div>
             </article>
