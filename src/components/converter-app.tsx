@@ -5,7 +5,7 @@ import type { PdfWorkerClient } from "@/lib/conversion/pdf-worker-client";
 import { DEFAULT_OUTPUT_FORMAT } from "@/lib/conversion/output-format";
 import { copyBlobToClipboard } from "@/lib/download/clipboard";
 import { downloadImage } from "@/lib/download/file-download";
-import { downloadAllImages, loadZipExporter } from "@/lib/download/download-all";
+import { downloadAllImages } from "@/lib/download/download-all";
 import { clearCompletedTasks } from "@/lib/conversion/task-state";
 import { FileDropzone } from "@/components/file-dropzone";
 import { DpiSelector } from "@/components/dpi-selector";
@@ -183,19 +183,6 @@ export function ConverterApp({ commitRef }: ConverterAppProps) {
           );
           pushNotice(`${queuedTask.file.name} failed to convert.`, "error");
         }
-      }
-
-      const allImages = flattenImages(taskRef.current.map((task) => task.images));
-      if (allImages.length > 5) {
-        loadZipExporter()
-          .then((exportAsZip) => exportAsZip(allImages))
-          .then((zipName) => {
-            pushNotice(`Automatically packed and downloaded ${zipName}.`, "success");
-          })
-          .catch((error) => {
-            console.error("ZIP export failed", error);
-            pushNotice("ZIP export failed. Please try again.", "error");
-          });
       }
 
       pushNotice("All ready files have been processed.", "success");
