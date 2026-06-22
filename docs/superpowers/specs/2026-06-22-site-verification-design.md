@@ -2,6 +2,8 @@
 comet_change: site-verification
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-06-22-site-verification
+status: final
 ---
 
 # Site Verification — Technical Design Doc

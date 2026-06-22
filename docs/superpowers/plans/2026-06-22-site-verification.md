@@ -2,6 +2,7 @@
 change: site-verification
 design-doc: docs/superpowers/specs/2026-06-22-site-verification-design.md
 base-ref: ac04ac01e0ecd5ed24fca87345e5868d0da5fe5b
+archived-with: 2026-06-22-site-verification
 ---
 
 # Site Verification — Implementation Plan

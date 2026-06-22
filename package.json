@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@astrojs/react": "^5.0.6",
+    "@fission-ai/openspec": "^1.4.1",
     "@radix-ui/react-progress": "^1.1.1",
     "@radix-ui/react-tabs": "^1.1.2",
     "astro": "^6.4.2",
