@@ -9,6 +9,18 @@ const ogImageUrl = `${siteUrl}og.png`;
 const pageTitle = "PDF Converter | Convert PDF to JPG, PNG, WebP, or BMP";
 const pageDescription =
   "Convert PDF pages to JPG, PNG, WebP, or BMP images in your browser. Free, private, batch-friendly PDF conversion with no file uploads.";
+// Site verification meta tags (conditional on env vars)
+const SITE_VERIFICATION_META = [
+  { env: 'PUBLIC_GOOGLE_SITE_VERIFICATION' as const, name: 'google-site-verification' },
+  { env: 'PUBLIC_BING_SITE_VERIFICATION' as const, name: 'msvalidate.01' },
+  { env: 'PUBLIC_YANDEX_SITE_VERIFICATION' as const, name: 'yandex-verification' },
+  { env: 'PUBLIC_BAIDU_SITE_VERIFICATION' as const, name: 'baidu-site-verification' },
+];
+
+const verificationMeta = SITE_VERIFICATION_META
+  .filter(m => import.meta.env[m.env])
+  .map(m => ({ name: m.name, content: import.meta.env[m.env] as string }));
+
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
@@ -61,6 +73,7 @@ function getCommitRef() {
     <meta name="author" content="PDF Converter" />
     <link rel="canonical" href={siteUrl} />
     <link rel="icon" type="image/png" sizes="128x128" href="/favicon-dark-128.png" />
+    {verificationMeta.map(m => <meta name={m.name} content={m.content} />)}
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={pageDescription} />
     <meta property="og:type" content="website" />
