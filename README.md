@@ -15,6 +15,7 @@ PDF Converter renders files locally in the browser and exports PDF pages as `JPG
 - Multi-image ZIP export with `jszip`
 - Static-site deployment with no backend, database, or API requirement
 - SEO metadata, `robots.txt`, and `sitemap.xml` for `https://pdf.q9m3.com/`
+- Search engine site verification (Google, Bing, Yandex, Baidu) via environment variables
 
 ## Privacy
 
@@ -133,6 +134,27 @@ Cloudflare Functions are not required for this app.
    - Publish directory: `dist`
 5. Deploy.
 
+## Environment Variables (Site Verification)
+
+To verify site ownership in search engine webmaster tools, set the following environment variables in your deployment platform:
+
+| Platform | Variable | Meta Tag |
+|----------|----------|----------|
+| Google   | `PUBLIC_GOOGLE_SITE_VERIFICATION` | `<meta name="google-site-verification" content="...">` |
+| Bing     | `PUBLIC_BING_SITE_VERIFICATION` | `<meta name="msvalidate.01" content="...">` |
+| Yandex   | `PUBLIC_YANDEX_SITE_VERIFICATION` | `<meta name="yandex-verification" content="...">` |
+| Baidu    | `PUBLIC_BAIDU_SITE_VERIFICATION` | `<meta name="baidu-site-verification" content="...">` |
+
+- When a variable is set to a non-empty value, the corresponding `<meta>` tag is injected into the HTML `<head>` at build time.
+- When unset or empty, no tag is rendered.
+- For local development, copy `.env.example` to `.env` and fill in the values.
+
+Find the verification codes in each search engine's webmaster tools:
+- [Google Search Console](https://search.google.com/search-console)
+- [Bing Webmaster Tools](https://www.bing.com/webmasters)
+- [Yandex Webmaster](https://webmaster.yandex.com/)
+- [Baidu Zhanzhang](https://ziyuan.baidu.com/)
+
 ## Browser Notes
 
 - Use a current version of Chrome, Edge, Firefox, or Safari.
@@ -173,6 +195,13 @@ Microsoft Clarity is configured in `src/pages/index.astro`.
 To change the tracking ID, replace `vtzz5hczt5` in the Clarity script with your own project ID, then rebuild the site.
 
 ## Changelog
+
+### v1.2.0
+
+- Added site verification meta tags for Google, Bing, Yandex, and Baidu search engines
+- Site verification codes are configurable via environment variables (`PUBLIC_*_SITE_VERIFICATION`)
+- Added `.env.example` with documentation for local development
+- Added environment variables section to README
 
 ### v1.1.0
 
