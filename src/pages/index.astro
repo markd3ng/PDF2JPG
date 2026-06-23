@@ -89,16 +89,74 @@ function getCommitRef() {
     <meta name="twitter:image" content={ogImageUrl} />
     <meta name="twitter:image:alt" content="PDF Converter browser-based PDF to image conversion" />
     <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
-    <!-- Microsoft Clarity analytics -->
-    <script is:inline type="text/javascript">
-      (function(c,l,a,r,i,t,y){
-        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-      })(window, document, "clarity", "script", "vtzz5hczt5");
-    </script>
+    <!-- Google Analytics 4 -->
+    {import.meta.env.PUBLIC_GA_ID && (
+      <>
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${import.meta.env.PUBLIC_GA_ID}`}></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){{dataLayer.push(arguments);}}
+          gtag('js', new Date());
+          gtag('config', import.meta.env.PUBLIC_GA_ID);
+        </script>
+      </>
+    )}
+    <!-- Microsoft Clarity -->
+    {import.meta.env.PUBLIC_CLARITY_ID && (
+      <script>
+        (function(c,l,a,r,i,t,y){{
+          c[a]=c[a]||function(){{(c[a].q=c[a].q||[]).push(arguments)}};
+          t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+          y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        }})(window, document, "clarity", "script", import.meta.env.PUBLIC_CLARITY_ID);
+      </script>
+    )}
+    <!-- Plausible Analytics -->
+    {import.meta.env.PUBLIC_PLAUSIBLE_DOMAIN && (
+      <script defer
+        data-domain={import.meta.env.PUBLIC_PLAUSIBLE_DOMAIN}
+        src={import.meta.env.PUBLIC_PLAUSIBLE_SRC || 'https://plausible.io/js/script.js'}>
+      </script>
+    )}
+    <!-- Fathom Analytics -->
+    {import.meta.env.PUBLIC_FATHOM_SITE_ID && (
+      <script
+        src={import.meta.env.PUBLIC_FATHOM_SRC || 'https://cdn.usefathom.com/script.js'}
+        data-site={import.meta.env.PUBLIC_FATHOM_SITE_ID}
+        defer>
+      </script>
+    )}
+    <!-- Umami Analytics -->
+    {import.meta.env.PUBLIC_UMAMI_WEBSITE_ID && (
+      <script defer
+        src={import.meta.env.PUBLIC_UMAMI_SRC || 'https://cloud.umami.is/script.js'}
+        data-website-id={import.meta.env.PUBLIC_UMAMI_WEBSITE_ID}>
+      </script>
+    )}
+    <!-- Matomo Analytics -->
+    {import.meta.env.PUBLIC_MATOMO_SITE_ID && import.meta.env.PUBLIC_MATOMO_URL && (
+      <script>
+        var _paq = window._paq = window._paq || [];
+        _paq.push(['trackPageView']);
+        _paq.push(['enableLinkTracking']);
+        (function() {{
+          var u=import.meta.env.PUBLIC_MATOMO_URL;
+          _paq.push(['setTrackerUrl', u+'matomo.php']);
+          _paq.push(['setSiteId', import.meta.env.PUBLIC_MATOMO_SITE_ID]);
+          var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+          g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+        }})();
+      </script>
+    )}
+    <!-- Google AdSense -->
+    {import.meta.env.PUBLIC_ADSENSE_PUBLISHER_ID && (
+      <script async
+        src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${import.meta.env.PUBLIC_ADSENSE_PUBLISHER_ID}`}
+        crossorigin="anonymous">
+      </script>
+    )}
   </head>
   <body>
-    <ConverterApp commitRef={commitRef} client:load />
+    <ConverterApp commitRef={commitRef} adsensePublisherId={import.meta.env.PUBLIC_ADSENSE_PUBLISHER_ID} client:load />
   </body>
 </html>
