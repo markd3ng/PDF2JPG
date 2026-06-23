@@ -21,7 +21,7 @@ PDF Converter renders files locally in the browser and exports PDF pages as `JPG
 
 PDF files are processed locally in the visitor's browser. This tool does not upload PDFs to an application backend for conversion.
 
-The page loads Microsoft Clarity for anonymous usage analytics and experience improvement. Clarity is not part of the PDF conversion pipeline, but it does load analytics resources from Microsoft.
+The page may load third-party analytics scripts for anonymous usage measurement. Analytics services are configured through environment variables and are only loaded when their respective variables are set. No personal data is collected or uploaded by this tool.
 
 ## Tech Stack
 
@@ -155,6 +155,27 @@ Find the verification codes in each search engine's webmaster tools:
 - [Yandex Webmaster](https://webmaster.yandex.com/)
 - [Baidu Zhanzhang](https://ziyuan.baidu.com/)
 
+## Environment Variables (Analytics & Advertising)
+
+Analytics and advertising services are enabled or disabled at build time through environment variables.
+
+When a variable is set to a non-empty value, the corresponding `<script>` tag is injected into the HTML `<head>`.
+When unset or empty, no script is rendered.
+
+| Service | Variables | Required |
+|---------|-----------|----------|
+| Google Analytics 4 | `PUBLIC_GA_ID` | Yes |
+| Microsoft Clarity | `PUBLIC_CLARITY_ID` | Yes |
+| Plausible | `PUBLIC_PLAUSIBLE_DOMAIN`, `PUBLIC_PLAUSIBLE_SRC` | Domain required, SRC optional |
+| Fathom | `PUBLIC_FATHOM_SITE_ID`, `PUBLIC_FATHOM_SRC` | Site ID required, SRC optional |
+| Umami | `PUBLIC_UMAMI_WEBSITE_ID`, `PUBLIC_UMAMI_SRC` | Website ID required, SRC optional |
+| Matomo | `PUBLIC_MATOMO_SITE_ID`, `PUBLIC_MATOMO_URL` | Both required |
+| Google AdSense | `PUBLIC_ADSENSE_PUBLISHER_ID` | Yes (for real ads) |
+
+- AdSense uses `data-ad-slot="auto"` for test/placeholder ads. For production, configure a real ad unit in the AdSense dashboard.
+- Matomo requires both `PUBLIC_MATOMO_SITE_ID` and `PUBLIC_MATOMO_URL` — both must be set for the script to inject.
+- For local development, copy `.env.example` to `.env` and fill in the values.
+
 ## Browser Notes
 
 - Use a current version of Chrome, Edge, Firefox, or Safari.
@@ -174,27 +195,30 @@ src/
 public/
 ```
 
-## Google AdSense Placeholder
+## Google AdSense
 
-The app contains a visible placeholder for a Google AdSense slot in `src/components/converter-app.tsx`.
+Google AdSense is conditionally injected based on the `PUBLIC_ADSENSE_PUBLISHER_ID` environment variable.
 
-Replace this placeholder:
+- When `PUBLIC_ADSENSE_PUBLISHER_ID` is set: the adsbygoogle.js script is loaded in `<head>`, and a real `<ins>` ad unit is rendered in the React component.
+- When unset: a placeholder div with "Google AdSense slot" text is shown.
 
-```tsx
-<div className="w-full max-w-md h-32 bg-slate-100 rounded-lg flex items-center justify-center">
-  <span className="text-sm text-slate-400">Google AdSense slot</span>
-</div>
-```
+The ad slot uses `data-ad-slot="auto"` which renders test/placeholder ads. For real ads, configure an ad unit in the AdSense dashboard and set `PUBLIC_ADSENSE_PUBLISHER_ID` in your deployment environment.
 
-with your AdSense code when the ad unit is ready.
+## Analytics Services
 
-## Microsoft Clarity
+Analytics services (Google Analytics 4, Microsoft Clarity, Plausible, Fathom, Umami, Matomo) are configured through environment variables in `src/pages/index.astro`.
 
-Microsoft Clarity is configured in `src/pages/index.astro`.
-
-To change the tracking ID, replace `vtzz5hczt5` in the Clarity script with your own project ID, then rebuild the site.
+Each service uses the same conditional injection pattern — set the corresponding `PUBLIC_*` environment variable to enable it. See the [Environment Variables (Analytics & Advertising)](#environment-variables-analytics--advertising) section for the full list of supported services and their variables.
 
 ## Changelog
+
+### v1.3.0
+
+- Replaced hardcoded Microsoft Clarity with 7 conditional analytics/ad services (GA4, Clarity, Plausible, Fathom, Umami, Matomo, AdSense)
+- All analytics services are configurable via environment variables (`PUBLIC_*`)
+- Added conditional AdSense ad unit rendering in React component (real ad vs placeholder)
+- Updated footer privacy notice to be generic across all analytics services
+- Added analytics environment variables to `.env.example` and documentation
 
 ### v1.2.0
 
