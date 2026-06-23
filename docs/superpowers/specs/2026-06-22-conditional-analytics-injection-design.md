@@ -230,8 +230,8 @@ All analytics variables use the `PUBLIC_` prefix (Astro client-side accessible):
 |------|--------|
 | `src/pages/index.astro` | Remove hardcoded Clarity (lines 92–99), add 7 conditional script blocks in `<head>`, pass `adsensePublisherId` prop |
 | `src/components/converter-app.tsx` | Add `adsensePublisherId` prop, conditional ad rendering, footer text update |
-| `src/env.d.ts` | Add 10 `PUBLIC_*` type declarations |
-| `.env.example` | Add 10 analytics placeholder entries with comments |
+| `src/env.d.ts` | Add 11 `PUBLIC_*` type declarations |
+| `.env.example` | Add 11 analytics placeholder entries with comments |
 | `README.md` | Update analytics configuration section, fix outdated content |
 
 ## Testing Strategy

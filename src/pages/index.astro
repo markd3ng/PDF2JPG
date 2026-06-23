@@ -150,7 +150,7 @@ function getCommitRef() {
     )}
     <!-- Google AdSense -->
     {import.meta.env.PUBLIC_ADSENSE_PUBLISHER_ID && (
-      <script async
+      <script is:inline async
         src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${import.meta.env.PUBLIC_ADSENSE_PUBLISHER_ID}`}
         crossorigin="anonymous">
       </script>
