@@ -16,6 +16,7 @@ PDF Converter renders files locally in the browser and exports PDF pages as `JPG
 - Static-site deployment with no backend, database, or API requirement
 - SEO metadata, `robots.txt`, and `sitemap.xml` for `https://pdf.q9m3.com/`
 - Search engine site verification (Google, Bing, Yandex, Baidu) via environment variables
+- Conditional analytics and advertising injection (GA4, Clarity, Plausible, Fathom, Umami, Matomo, AdSense) via environment variables
 
 ## Privacy
 
