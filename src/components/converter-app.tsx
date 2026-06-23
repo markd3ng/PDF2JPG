@@ -25,9 +25,10 @@ const NOTICE_STYLES: Record<NoticeTone, string> = {
 
 interface ConverterAppProps {
   commitRef: string;
+  adsensePublisherId?: string;
 }
 
-export function ConverterApp({ commitRef }: ConverterAppProps) {
+export function ConverterApp({ commitRef, adsensePublisherId }: ConverterAppProps) {
   const workerClientRef = useRef<PdfWorkerClient | null>(null);
   const [dpi, setDpi] = useState<DpiPreset>("150");
   const [outputFormat, setOutputFormat] = useState<OutputFormat>(DEFAULT_OUTPUT_FORMAT);
@@ -255,15 +256,30 @@ export function ConverterApp({ commitRef }: ConverterAppProps) {
         ) : null}
 
         {/* Google AdSense ad slot */}
-        <div className="rounded-xl bg-white p-4 shadow-sm">
-          <div className="mb-2 text-center text-sm text-slate-500">Advertisement</div>
-          <div className="flex justify-center">
-            {/* Replace this placeholder with Google AdSense code. */}
-            <div className="w-full max-w-md h-32 bg-slate-100 rounded-lg flex items-center justify-center">
-              <span className="text-sm text-slate-400">Google AdSense slot</span>
+        {adsensePublisherId ? (
+          <div className="rounded-xl bg-white p-4 shadow-sm">
+            <div className="mb-2 text-center text-sm text-slate-500">Advertisement</div>
+            <div className="flex justify-center">
+              <ins
+                className="adsbygoogle"
+                style={{ display: 'block' }}
+                data-ad-client={adsensePublisherId}
+                data-ad-slot="auto"
+                data-ad-format="auto"
+                data-full-width-responsive="true"
+              />
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="rounded-xl bg-white p-4 shadow-sm">
+            <div className="mb-2 text-center text-sm text-slate-500">Advertisement</div>
+            <div className="flex justify-center">
+              <div className="w-full max-w-md h-32 bg-slate-100 rounded-lg flex items-center justify-center">
+                <span className="text-sm text-slate-400">Google AdSense slot</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         <section className="grid gap-5">
           <div className="flex flex-col gap-5">
@@ -299,7 +315,7 @@ export function ConverterApp({ commitRef }: ConverterAppProps) {
 
       <footer className="border-t border-white/60 bg-white/70 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-2 px-4 py-4 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-          <p>PDF files are processed locally in your browser and are not uploaded by this tool. This page loads Microsoft Clarity for anonymous usage analytics.</p>
+          <p>PDF files are processed locally in your browser. This page may load third-party analytics scripts for anonymous usage measurement. No personal data is collected or uploaded by this tool.</p>
           <a
             href={`https://github.com/markd3ng/PDF2JPG/commit/${commitRef}`}
             target="_blank"
